@@ -2,6 +2,7 @@ package me.ajh123.metro_rail.foundation;
 
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
+import me.ajh123.metro_rail.content.tickets.TicketDispenser;
 import me.ajh123.metro_rail.content.tickets.TicketGate;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -20,6 +21,9 @@ import static me.ajh123.metro_rail.MetroRail.MOD_ID;
 public class ModBlocks {
     public static final TicketGate TICKET_GATE = register("ticket_gate", TicketGate::new,
             AbstractBlock.Settings.copy(Blocks.OAK_FENCE_GATE), true);
+
+    public static final TicketDispenser TICKET_DISPENSER = register("ticket_dispenser", TicketDispenser::new,
+            AbstractBlock.Settings.copy(Blocks.DISPENSER), true);
 
     private static <T extends Block & PolymerBlock> T register(String name, Function<AbstractBlock.Settings, T> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem) {
         // Create a registry key for the block

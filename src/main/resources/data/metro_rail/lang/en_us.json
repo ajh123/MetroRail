@@ -1,5 +1,7 @@
 {
   "item.metro_rail.ticket": "Ticket",
   "block.metro_rail.ticket_gate": "Ticket Gate",
-  "info.metro_rail.ticket_gate.ticket_required": "You need a ticket to open this gate."
+  "block.metro_rail.ticket_dispenser": "Ticket Dispenser",
+  "info.metro_rail.ticket_gate.ticket_required": "You need a ticket to open this gate.",
+  "gui.metro_rail.ticket_dispenser.title": "Get tickets"
 }
