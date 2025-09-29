@@ -1,6 +1,7 @@
 package me.ajh123.metro_rail.content.tickets;
 
 import eu.pb4.polymer.core.api.block.SimplePolymerBlock;
+import me.ajh123.metro_rail.networking.GetTicketPayload;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -24,7 +25,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -34,8 +34,6 @@ import xyz.nucleoid.packettweaker.PacketContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static me.ajh123.metro_rail.MetroRail.MOD_ID;
 
 public class TicketDispenser extends SimplePolymerBlock {
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
@@ -48,21 +46,15 @@ public class TicketDispenser extends SimplePolymerBlock {
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         var list = new ArrayList<DialogActionButtonData>();
 
-        NbtCompound worldPos = new NbtCompound();
-        worldPos.putInt("x", pos.getX());
-        worldPos.putInt("y", pos.getY());
-        worldPos.putInt("z", pos.getZ());
-
         for (int i = 0; i < 10; i++) {
-            NbtCompound nbt = new NbtCompound();
-            nbt.putString("ticket_id", "entry_"+i);
-            nbt.put("world_pos", worldPos);
-            nbt.putString("player_uuid", player.getUuidAsString());
+            NbtCompound payloadNBT = new NbtCompound();
+            GetTicketPayload payload = new GetTicketPayload(pos, i, player.getUuid());
+            payload.write(payloadNBT);
 
             list.add(new DialogActionButtonData(new DialogButtonData(Text.literal("Entry "+i), 150),
                     Optional.of(new SimpleDialogAction(new ClickEvent.Custom( // Send a custom packet event when clicked.
-                            Identifier.of(MOD_ID, "get_ticket"),
-                            Optional.of(nbt)
+                            GetTicketPayload.GET_TICKET_PAYLOAD_IDENTIFIER,
+                            Optional.of(payloadNBT)
                     )))));
         }
 

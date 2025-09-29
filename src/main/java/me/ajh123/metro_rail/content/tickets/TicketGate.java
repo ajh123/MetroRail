@@ -63,7 +63,7 @@ public class TicketGate extends FenceGateBlock implements PolymerBlock {
         );
         world.emitGameEvent(player, isOpen ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, pos);
 
-        // Schedule the gate to close after 15 ticks (0.75 seconds)
+        // Schedule the gate to close after 15 ticks (0.75 seconds) just enough time for one person to pass through
         TaskScheduler.runTaskLater(() -> {
             BlockState currentState = world.getBlockState(pos);
             if (!currentState.get(OPEN)) {
