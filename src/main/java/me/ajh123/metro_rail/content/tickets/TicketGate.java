@@ -43,7 +43,7 @@ public class TicketGate extends FenceGateBlock implements PolymerBlock {
         boolean hasTicket = player.getMainHandStack().getItem().equals(ModItems.TICKET);
 
         if (!hasTicket) {
-            player.sendMessage(Text.translatable("info.metro_rail.ticket_gate.ticket_required").withColor(Colors.RED), true);
+            player.sendMessage(Text.translatable("gui.metro_rail.ticket_gate.ticket_required").withColor(Colors.RED), true);
             return ActionResult.CONSUME;
         }
 

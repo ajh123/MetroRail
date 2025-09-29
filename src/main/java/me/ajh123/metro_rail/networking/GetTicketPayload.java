@@ -15,7 +15,7 @@ import static me.ajh123.metro_rail.MetroRail.MOD_ID;
 
 public record GetTicketPayload(
     BlockPos dispenserPos,
-    int ticket_id,
+    int ticketId,
     UUID playerUuid
 ) {
     public static final Identifier GET_TICKET_PAYLOAD_IDENTIFIER = Identifier.of(MOD_ID, "get_ticket");
@@ -37,7 +37,7 @@ public record GetTicketPayload(
         Optional<Integer> x = dispenserPosNbt.getInt("x");
         Optional<Integer> y = dispenserPosNbt.getInt("y");
         Optional<Integer> z = dispenserPosNbt.getInt("z");
-        Optional<Integer> ticket_id = dataCompound.getInt("ticket_id");
+        Optional<Integer> ticket_id = dataCompound.getInt("ticketId");
         Optional<long[]> uuidArray = dataCompound.getLongArray("playerUuid");
         if (dispenserPosNbt.isEmpty() || x.isEmpty() || y.isEmpty() || z.isEmpty() || ticket_id.isEmpty() || uuidArray.isEmpty() || uuidArray.get().length != 2) {
             throw new IllegalArgumentException("Invalid NBT data for GetTicketPayload");
@@ -80,7 +80,7 @@ public record GetTicketPayload(
         dispenserPosNbt.putInt("y", this.dispenserPos.getY());
         dispenserPosNbt.putInt("z", this.dispenserPos.getZ());
         nbt.put("dispenserPos", dispenserPosNbt);
-        nbt.putInt("ticket_id", this.ticket_id);
+        nbt.putInt("ticketId", this.ticketId);
         NbtLongArray uuidArray = new NbtLongArray(new long[]{
             this.playerUuid.getMostSignificantBits(),
             this.playerUuid.getLeastSignificantBits()

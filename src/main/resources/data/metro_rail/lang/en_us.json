@@ -2,6 +2,11 @@
   "item.metro_rail.ticket": "Ticket",
   "block.metro_rail.ticket_gate": "Ticket Gate",
   "block.metro_rail.ticket_dispenser": "Ticket Dispenser",
-  "info.metro_rail.ticket_gate.ticket_required": "You need a ticket to open this gate.",
+  "gui.metro_rail.ticket.free": "%1$s (Free)",
+  "gui.metro_rail.ticket.free.insufficient_funds": "This ticket is free, you should be able to get one.",
+  "gui.metro_rail.ticket.itemPrice": "%1$s (Requires %2$s of %3$s)",
+  "gui.metro_rail.ticket.itemPrice.insufficient_funds": "Insufficient funds to purchase %1$s ticket. (Requires %2$s of %3$s)",
+  "gui.metro_rail.ticket.invalid_ticket": "Invalid Ticket",
+  "gui.metro_rail.ticket_gate.ticket_required": "You need a ticket to open this gate.",
   "gui.metro_rail.ticket_dispenser.title": "Get tickets"
 }
