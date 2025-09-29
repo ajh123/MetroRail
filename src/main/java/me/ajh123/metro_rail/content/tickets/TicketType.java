@@ -9,7 +9,7 @@ import net.minecraft.text.Text;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public record Ticket(
+public record TicketType(
     int id,
     String name,
     TicketPrice price
@@ -33,8 +33,8 @@ public record Ticket(
 
     public abstract static class TicketPrice {
         public abstract boolean purchase(PlayerEntity player, boolean simulate);
-        public abstract MutableText displayPrice(Ticket ticket);
-        public abstract MutableText displayInsufficientFunds(Ticket ticket);
+        public abstract MutableText displayPrice(TicketType ticketType);
+        public abstract MutableText displayInsufficientFunds(TicketType ticketType);
     }
 
     public static class FreePrice extends TicketPrice {
@@ -44,13 +44,13 @@ public record Ticket(
         }
 
         @Override
-        public MutableText displayPrice(Ticket ticket) {
-            return Text.translatable("gui.metro_rail.ticket.free", ticket.name);
+        public MutableText displayPrice(TicketType ticketType) {
+            return Text.translatable("gui.metro_rail.ticket.free", ticketType.name);
         }
 
         @Override
-        public MutableText displayInsufficientFunds(Ticket ticket) {
-            return Text.translatable("gui.metro_rail.ticket.free.insufficient_funds", ticket.name);
+        public MutableText displayInsufficientFunds(TicketType ticketType) {
+            return Text.translatable("gui.metro_rail.ticket.free.insufficient_funds", ticketType.name);
         }
     }
 
@@ -97,13 +97,13 @@ public record Ticket(
         }
 
         @Override
-        public MutableText displayPrice(Ticket ticket) {
-            return Text.translatable("gui.metro_rail.ticket.itemPrice", ticket.name, price.getCount(), price.getName());
+        public MutableText displayPrice(TicketType ticketType) {
+            return Text.translatable("gui.metro_rail.ticket.itemPrice", ticketType.name, price.getCount(), price.getName());
         }
 
         @Override
-        public MutableText displayInsufficientFunds(Ticket ticket) {
-            return Text.translatable("gui.metro_rail.ticket.itemPrice.insufficient_funds", ticket.name, price.getCount(), price.getName());
+        public MutableText displayInsufficientFunds(TicketType ticketType) {
+            return Text.translatable("gui.metro_rail.ticket.itemPrice.insufficient_funds", ticketType.name, price.getCount(), price.getName());
         }
     }
 

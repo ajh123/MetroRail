@@ -1,6 +1,6 @@
 package me.ajh123.metro_rail.mixin;
 
-import me.ajh123.metro_rail.content.tickets.Ticket;
+import me.ajh123.metro_rail.content.tickets.TicketType;
 import me.ajh123.metro_rail.content.tickets.TicketDispenser;
 import me.ajh123.metro_rail.foundation.ModComponents;
 import me.ajh123.metro_rail.foundation.ModItems;
@@ -37,20 +37,20 @@ public class MinecraftServerMixin {
             ServerPlayerEntity player = self.getPlayerManager().getPlayer(playerUUID);
 
             if (player != null) {
-                Ticket ticket = TicketDispenser.getTicketById(player.getWorld(), getTicketPayload.dispenserPos(), getTicketPayload.ticketId());
-                if (ticket == null) {
+                TicketType ticketType = TicketDispenser.getTicketById(player.getWorld(), getTicketPayload.dispenserPos(), getTicketPayload.ticketId());
+                if (ticketType == null) {
                     player.sendMessage(Text.translatable("gui.metro_rail.ticket.invalid_ticket").formatted(Formatting.RED), true);
                     return;
                 }
-                boolean purchased = ticket.price().purchase(player, false);
+                boolean purchased = ticketType.price().purchase(player, false);
                 if (!purchased) {
-                    player.sendMessage(ticket.displayInsufficientFunds().formatted(Formatting.RED), true);
+                    player.sendMessage(ticketType.displayInsufficientFunds().formatted(Formatting.RED), true);
                     return;
                 }
 
                 ItemStack newTicket = new ItemStack(ModItems.TICKET);
-                newTicket.set(ModComponents.TICKET_COMPONENT, new Ticket.BoughtTicket(
-                        ticket.name()
+                newTicket.set(ModComponents.TICKET_COMPONENT, new TicketType.BoughtTicket(
+                        ticketType.name()
                 ));
                 player.getInventory().insertStack(newTicket);
             }

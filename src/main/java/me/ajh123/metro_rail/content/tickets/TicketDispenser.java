@@ -63,11 +63,11 @@ public class TicketDispenser extends SimplePolymerBlock {
         var list = new ArrayList<DialogActionButtonData>();
         var tickets = getTicketsForDispenser(world, pos);
 
-        for (Ticket ticket : tickets) {
-            GetTicketPayload payload = new GetTicketPayload(pos, ticket.id(), player.getUuid());
+        for (TicketType ticketType : tickets) {
+            GetTicketPayload payload = new GetTicketPayload(pos, ticketType.id(), player.getUuid());
             NbtElement payloadNBT = payload.writeSigned(pair);
 
-            list.add(new DialogActionButtonData(new DialogButtonData(ticket.displayPrice(), 250),
+            list.add(new DialogActionButtonData(new DialogButtonData(ticketType.displayPrice(), 250),
                     Optional.of(new SimpleDialogAction(new ClickEvent.Custom( // Send a custom packet event when clicked.
                             GetTicketPayload.GET_TICKET_PAYLOAD_IDENTIFIER,
                             Optional.of(payloadNBT)
@@ -84,19 +84,19 @@ public class TicketDispenser extends SimplePolymerBlock {
         ), list, Optional.of(new DialogActionButtonData(new DialogButtonData(ScreenTexts.DONE, 250), Optional.empty())), 1)));
     }
 
-    public static List<Ticket> getTicketsForDispenser(World world, BlockPos pos) {
+    public static List<TicketType> getTicketsForDispenser(World world, BlockPos pos) {
         //TODO: Make this configurable via block entity data
         ItemStack EMERALD5 = new ItemStack(Items.EMERALD, 5);
         ItemStack EMERALD20 = new ItemStack(Items.EMERALD, 20);
 
-        List<Ticket> tickets = new ArrayList<>();
-        tickets.add(new Ticket(0, "Single Ride", Ticket.of(ItemStack.EMPTY)));
-        tickets.add(new Ticket(1, "Day Pass", Ticket.of(EMERALD5)));
-        tickets.add(new Ticket(2, "Weekly Pass", Ticket.of(EMERALD20)));
-        return tickets;
+        List<TicketType> ticketTypes = new ArrayList<>();
+        ticketTypes.add(new TicketType(0, "Single Ride", TicketType.of(ItemStack.EMPTY)));
+        ticketTypes.add(new TicketType(1, "Day Pass", TicketType.of(EMERALD5)));
+        ticketTypes.add(new TicketType(2, "Weekly Pass", TicketType.of(EMERALD20)));
+        return ticketTypes;
     }
 
-    public static Ticket getTicketById(World world, BlockPos pos, int id) {
+    public static TicketType getTicketById(World world, BlockPos pos, int id) {
         return getTicketsForDispenser(world, pos).stream().filter(ticket -> ticket.id() == id).findFirst().orElse(null);
     }
 

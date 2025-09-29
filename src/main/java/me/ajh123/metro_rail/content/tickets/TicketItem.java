@@ -13,7 +13,7 @@ public class TicketItem extends SimplePolymerItem {
 
     @Override
     public Text getName(ItemStack stack) {
-        Ticket.BoughtTicket ticket = stack.get(ModComponents.TICKET_COMPONENT);
+        TicketType.BoughtTicket ticket = stack.get(ModComponents.TICKET_COMPONENT);
         if (ticket != null) {
             return Text.translatable("item.metro_rail.ticket.long", ticket.name());
         }
