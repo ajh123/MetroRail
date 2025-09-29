@@ -63,7 +63,9 @@ public record Ticket(
                 }
             });
 
-            if (!simulate) {
+            boolean canAfford = storedCount.get() >= price.getCount();
+
+            if (!simulate && canAfford) {
                 int toRemove = price.getCount();
                 for (int i = 0; i < player.getInventory().size(); i++) {
                     ItemStack itemStack = player.getInventory().getStack(i);
@@ -81,7 +83,7 @@ public record Ticket(
                 }
             }
 
-            return storedCount.get() >= price.getCount();
+            return canAfford;
         }
 
         @Override
