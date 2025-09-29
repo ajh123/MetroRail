@@ -2,6 +2,7 @@ package me.ajh123.metro_rail.mixin;
 
 import me.ajh123.metro_rail.content.tickets.Ticket;
 import me.ajh123.metro_rail.content.tickets.TicketDispenser;
+import me.ajh123.metro_rail.foundation.ModComponents;
 import me.ajh123.metro_rail.foundation.ModItems;
 import me.ajh123.metro_rail.networking.GetTicketPayload;
 import net.minecraft.item.ItemStack;
@@ -46,7 +47,12 @@ public class MinecraftServerMixin {
                     player.sendMessage(ticket.displayInsufficientFunds().formatted(Formatting.RED), true);
                     return;
                 }
-                player.getInventory().insertStack(new ItemStack(ModItems.TICKET));
+
+                ItemStack newTicket = new ItemStack(ModItems.TICKET);
+                newTicket.set(ModComponents.TICKET_COMPONENT, new Ticket.BoughtTicket(
+                        ticket.name()
+                ));
+                player.getInventory().insertStack(newTicket);
             }
         }
     }

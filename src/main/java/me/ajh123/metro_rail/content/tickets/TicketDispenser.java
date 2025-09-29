@@ -90,9 +90,9 @@ public class TicketDispenser extends SimplePolymerBlock {
         ItemStack EMERALD20 = new ItemStack(Items.EMERALD, 20);
 
         List<Ticket> tickets = new ArrayList<>();
-        tickets.add(new Ticket(0, Text.literal("Single Ride"), Ticket.of(ItemStack.EMPTY)));
-        tickets.add(new Ticket(1, Text.literal("Day Pass"), Ticket.of(EMERALD5)));
-        tickets.add(new Ticket(2, Text.literal("Weekly Pass"), Ticket.of(EMERALD20)));
+        tickets.add(new Ticket(0, "Single Ride", Ticket.of(ItemStack.EMPTY)));
+        tickets.add(new Ticket(1, "Day Pass", Ticket.of(EMERALD5)));
+        tickets.add(new Ticket(2, "Weekly Pass", Ticket.of(EMERALD20)));
         return tickets;
     }
 

@@ -20,6 +20,7 @@ public class Registration {
     public static void initialise() {
         ModItems.initialise();
         ModBlocks.initialise();
+        ModComponents.initialise();
     }
 
     static <T extends Block & PolymerBlock> T register(String name, Function<AbstractBlock.Settings, T> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem) {

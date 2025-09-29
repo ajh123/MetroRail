@@ -1,5 +1,7 @@
 package me.ajh123.metro_rail.content.tickets;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
@@ -9,9 +11,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public record Ticket(
     int id,
-    Text name,
+    String name,
     TicketPrice price
 ) {
+
+    public record BoughtTicket(
+        String name
+    ) {
+        public static final Codec<BoughtTicket> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+                Codec.STRING.fieldOf("name").forGetter(BoughtTicket::name)
+        ).apply(builder, BoughtTicket::new));
+    }
 
     public MutableText displayPrice() {
         return price.displayPrice(this);

@@ -1,5 +1,6 @@
 {
   "item.metro_rail.ticket": "Ticket",
+  "item.metro_rail.ticket.long": "%1$s Ticket",
   "block.metro_rail.ticket_gate": "Ticket Gate",
   "block.metro_rail.ticket_dispenser": "Ticket Dispenser",
   "gui.metro_rail.ticket.free": "%1$s (Free)",
