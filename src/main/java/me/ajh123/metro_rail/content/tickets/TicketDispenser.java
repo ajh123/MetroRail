@@ -14,9 +14,12 @@ import net.minecraft.dialog.action.SimpleDialogAction;
 import net.minecraft.dialog.type.MultiActionDialog;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.nbt.NbtByteArray;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenTexts;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
@@ -31,6 +34,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import xyz.nucleoid.packettweaker.PacketContext;
 
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,12 +48,18 @@ public class TicketDispenser extends SimplePolymerBlock {
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (world.isClient) {
+            return ActionResult.SUCCESS;
+        }
+
+        ServerWorld serverWorld = (ServerWorld) world;
+        KeyPair pair = serverWorld.getServer().getKeyPair();
+
         var list = new ArrayList<DialogActionButtonData>();
 
         for (int i = 0; i < 10; i++) {
-            NbtCompound payloadNBT = new NbtCompound();
             GetTicketPayload payload = new GetTicketPayload(pos, i, player.getUuid());
-            payload.write(payloadNBT);
+            NbtElement payloadNBT = payload.writeSigned(pair);
 
             list.add(new DialogActionButtonData(new DialogButtonData(Text.literal("Entry "+i), 150),
                     Optional.of(new SimpleDialogAction(new ClickEvent.Custom( // Send a custom packet event when clicked.
