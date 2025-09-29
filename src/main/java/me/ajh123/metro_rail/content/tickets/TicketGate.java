@@ -67,7 +67,7 @@ public class TicketGate extends FenceGateBlock implements PolymerBlock {
         TaskScheduler.runTaskLater(() -> {
             BlockState currentState = world.getBlockState(pos);
             if (!currentState.get(OPEN)) {
-                return; // Don't close if it's a fence or already closed
+                return; // Don't close if it's already closed
             }
             BlockState newState = currentState.with(OPEN, false);
             world.setBlockState(pos, newState, Block.NOTIFY_LISTENERS | Block.REDRAW_ON_MAIN_THREAD);
