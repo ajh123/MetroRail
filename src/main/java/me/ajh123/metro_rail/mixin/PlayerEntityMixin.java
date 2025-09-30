@@ -77,6 +77,11 @@ public class PlayerEntityMixin {
                     case CANNOT_LINK_TO_SELF:
                         self.sendMessage(Text.literal("You cannot connect this minecart; the source cannot be connected to it self."), true);
                         result = ActionResult.FAIL;
+                        break;
+                    case ALREADY_HAS_CHILD:
+                        self.sendMessage(Text.literal("You cannot connect this minecart; the source already has a child."), true);
+                        result = ActionResult.FAIL;
+                        break;
                     default:
                         break;
                 }
