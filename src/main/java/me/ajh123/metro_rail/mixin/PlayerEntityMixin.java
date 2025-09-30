@@ -61,7 +61,7 @@ public class PlayerEntityMixin {
                 } else {                    
                     if (parent instanceof MinecartLinkable parentLink) {
                         if (entity instanceof MinecartLinkable childLink) {
-                            failure = childLink.addParent(parentLink);
+                            failure = childLink.metroRail$addParent(parentLink);
                         }
                     }
                 }
@@ -89,7 +89,7 @@ public class PlayerEntityMixin {
 
         if (isUnlinking) {
             if (entity instanceof MinecartLinkable childLink) {
-                childLink.unlinkNeighbors();
+                childLink.metroRail$unlinkNeighbors();
                 self.sendMessage(Text.literal("Unlinked from parent"), true);
                 ci.setReturnValue(ActionResult.SUCCESS);
             }

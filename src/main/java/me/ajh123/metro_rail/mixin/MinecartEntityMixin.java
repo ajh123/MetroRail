@@ -6,13 +6,15 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import me.ajh123.metro_rail.content.minecart.MinecartLinkable;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(AbstractMinecartEntity.class)
 public class MinecartEntityMixin implements MinecartLinkable {
+    @Unique
     private MinecartLinkable parent; // TODO: store parent on minecart entity with NBT
 
     @Override
-    public LinkFailure addParent(MinecartLinkable other) {
+    public LinkFailure metroRail$addParent(MinecartLinkable other) {
         if (other == parent) {
             return LinkFailure.CANNOT_LINK_TO_SELF;
         }
@@ -27,19 +29,19 @@ public class MinecartEntityMixin implements MinecartLinkable {
     }
 
     @Override
-    public List<MinecartLinkable> getChildren() {
+    public List<MinecartLinkable> metroRail$getChildren() {
         System.out.println("Get Children");
         // TODO: figure this out
         return null;
     }
 
     @Override
-    public MinecartLinkable getParent() {
+    public MinecartLinkable metroRail$getParent() {
         return parent;
     }
 
     @Override
-    public boolean unlinkNeighbors() {
+    public boolean metroRail$unlinkNeighbors() {
         this.parent = null;
         // TODO: unlink immedieate child
         return true;
