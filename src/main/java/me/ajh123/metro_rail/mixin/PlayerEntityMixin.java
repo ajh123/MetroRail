@@ -1,11 +1,14 @@
 package me.ajh123.metro_rail.mixin;
 
+import java.util.UUID;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import me.ajh123.metro_rail.content.minecart.CartLinkingComponent;
+import me.ajh123.metro_rail.content.minecart.MinecartLinkable;
 import me.ajh123.metro_rail.foundation.ModComponents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,7 +22,6 @@ import net.minecraft.world.World;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
-    // interact
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     public void interact(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
         World world = entity.getWorld();
@@ -43,8 +45,18 @@ public class PlayerEntityMixin {
                 CartLinkingComponent linking = new CartLinkingComponent(entity.getUuid().toString(), true);
                 handItem.set(ModComponents.CART_LINKING, linking);
             } else {
-                // TODO: store links on minecart entity
-                self.sendMessage(Text.literal("Finished minecart link"), true);
+                CartLinkingComponent linkData = handItem.get(ModComponents.CART_LINKING);
+                Entity parent = world.getEntity(UUID.fromString(linkData.startingEntityId()));
+                if (parent == null) {
+                    self.sendMessage(Text.literal("Invalid minecart link, parent cart does not exist."), true);
+                } else {
+                    if (parent instanceof MinecartLinkable parentLink) {
+                        if (entity instanceof MinecartLinkable childLink) {
+                            childLink.addParent(parentLink);
+                        }
+                    }
+                    self.sendMessage(Text.literal("Finished minecart link"), true);
+                }
                 handItem.remove(ModComponents.CART_LINKING);                
             }
             ci.setReturnValue(ActionResult.SUCCESS);
