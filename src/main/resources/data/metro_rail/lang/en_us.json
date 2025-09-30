@@ -9,5 +9,12 @@
   "gui.metro_rail.ticket.itemPrice.insufficient_funds": "Insufficient funds to purchase %1$s ticket. (Requires %2$s of %3$s)",
   "gui.metro_rail.ticket.invalid_ticket": "Invalid Ticket",
   "gui.metro_rail.ticket_gate.ticket_required": "You need a ticket to open this gate.",
-  "gui.metro_rail.ticket_dispenser.title": "Get tickets"
+  "gui.metro_rail.ticket_dispenser.title": "Get tickets",
+  "gui.metro_rail.minecart.link_starting": "Starting minecart link",
+  "gui.metro_rail.minecart.link_failed.no_parent": "Invalid minecart link, parent cart does not exist.",
+  "gui.metro_rail.minecart.link_failed.source_has_parent": "Invalid minecart link, source cart is already linked to another cart.",
+  "gui.metro_rail.minecart.link_failed.source_connected_to_self": "Invalid minecart link, source cart cannot be linked to itself.",
+  "gui.metro_rail.minecart.link_failed.too_many_children": "Invalid minecart link, source cart cannot have more than 1 child carts.",
+  "gui.metro_rail.minecart.link_success": "Minecart link successful.",
+  "gui.metro_rail.minecart.unlink_success": "Minecart unlink successful."
 }

@@ -3,6 +3,7 @@ package me.ajh123.metro_rail.mixin;
 import java.util.UUID;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -44,60 +45,72 @@ public class PlayerEntityMixin {
         }
 
         if (isLinking) {
-            if (startingLink) {
-                self.sendMessage(Text.literal("Starting minecart link"), true);
-                CartLinkingComponent linking = new CartLinkingComponent(entity.getUuid().toString(), true);
-                handItem.set(ModComponents.CART_LINKING, linking);
-                ci.setReturnValue(ActionResult.SUCCESS);
-                return;
-            } else {
-                CartLinkingComponent linkData = handItem.get(ModComponents.CART_LINKING);
-                Entity parent = world.getEntity(UUID.fromString(linkData.startingEntityId()));
-                LinkFailure failure = LinkFailure.NONE;
-                ActionResult result = ActionResult.SUCCESS;
-
-                if (parent == null) {
-                    self.sendMessage(Text.literal("Invalid minecart link, parent cart does not exist."), true);
-                } else {                    
-                    if (parent instanceof MinecartLinkable parentLink) {
-                        if (entity instanceof MinecartLinkable childLink) {
-                            failure = childLink.metroRail$addParent(parentLink);
-                        }
-                    }
-                }
-
-                switch (failure) {
-                    case NONE:
-                        self.sendMessage(Text.literal("Finished minecart link"), true);
-                        break;
-                    case ALREADY_HAS_PARENT:
-                        self.sendMessage(Text.literal("You cannot connect this minecart; the source already has a parent."), true);
-                        result = ActionResult.FAIL;
-                        break;
-                    case CANNOT_LINK_TO_SELF:
-                        self.sendMessage(Text.literal("You cannot connect this minecart; the source cannot be connected to it self."), true);
-                        result = ActionResult.FAIL;
-                        break;
-                    case SOURCE_ALREADY_HAS_CHILD:
-                        self.sendMessage(Text.literal("You cannot connect this minecart; the source already has a child."), true);
-                        result = ActionResult.FAIL;
-                        break;
-                    default:
-                        break;
-                }
-
-                handItem.remove(ModComponents.CART_LINKING);
-                ci.setReturnValue(result);
-                return;
-            }
+            handleLinking(entity, ci, startingLink, self, handItem, world);
+            return;
         }
 
         if (isUnlinking) {
             if (entity instanceof MinecartLinkable childLink) {
                 childLink.metroRail$unlinkNeighbors();
-                self.sendMessage(Text.literal("Unlinked from parent"), true);
+                self.sendMessage(Text.translatable("gui.metro_rail.minecart.unlink_success"), true);
                 ci.setReturnValue(ActionResult.SUCCESS);
             }
+        }
+    }
+
+    @Unique
+    private static void handleLinking(Entity entity, CallbackInfoReturnable<ActionResult> ci, boolean startingLink, PlayerEntity self, ItemStack handItem, World world) {
+        if (startingLink) {
+            self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_starting"), true);
+            CartLinkingComponent linking = new CartLinkingComponent(entity.getUuid().toString(), true);
+            handItem.set(ModComponents.CART_LINKING, linking);
+            ci.setReturnValue(ActionResult.SUCCESS);
+        } else {
+            CartLinkingComponent linkData = handItem.get(ModComponents.CART_LINKING);
+            LinkFailure failure = LinkFailure.NONE;
+            ActionResult result = ActionResult.SUCCESS;
+
+            if (linkData == null) {
+                self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_failed.no_parent"), true);
+                ci.setReturnValue(ActionResult.FAIL);
+                return;
+            }
+
+            Entity parent = world.getEntity(UUID.fromString(linkData.startingEntityId()));
+
+            if (parent == null) {
+                self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_failed.no_parent"), true);
+                result = ActionResult.FAIL;
+            } else {
+                if (parent instanceof MinecartLinkable parentLink) {
+                    if (entity instanceof MinecartLinkable childLink) {
+                        failure = childLink.metroRail$addParent(parentLink);
+                    }
+                }
+            }
+
+            switch (failure) {
+                case NONE:
+                    self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_success"), true);
+                    break;
+                case ALREADY_HAS_PARENT:
+                    self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_failed.source_has_parent"), true);
+                    result = ActionResult.FAIL;
+                    break;
+                case CANNOT_LINK_TO_SELF:
+                    self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_failed.source_connected_to_self"), true);
+                    result = ActionResult.FAIL;
+                    break;
+                case SOURCE_ALREADY_HAS_CHILD:
+                    self.sendMessage(Text.translatable("gui.metro_rail.minecart.link_failed.too_many_children"), true);
+                    result = ActionResult.FAIL;
+                    break;
+                default:
+                    break;
+            }
+
+            handItem.remove(ModComponents.CART_LINKING);
+            ci.setReturnValue(result);
         }
     }
 }
