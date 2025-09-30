@@ -21,9 +21,11 @@ public interface MinecartLinkable {
     @Unique
     MinecartLinkable metroRail$getChild();
 
-    /** Break links to both parent and child. */
+    /**
+     * Break links to both parent and child.
+     */
     @Unique
-    boolean metroRail$unlinkNeighbors();
+    void metroRail$unlinkNeighbors();
 
     /** All minecarts in the same train, ordered from head to tail. */
     @Unique
@@ -41,10 +43,18 @@ public interface MinecartLinkable {
     @Unique
     UUID metroRail$getUuid();
 
+    /** Internal method to set the child without restrictions */
+    @Unique
+    void metroRail$setChildInternal(UUID child);
+
+    /** Internal method to set the parent without restrictions */
+    @Unique
+    void metroRail$setParentInternal(UUID parent);
+
     enum LinkFailure {
         NONE,
         ALREADY_HAS_PARENT,
-        ALREADY_HAS_CHILD,
+        SOURCE_ALREADY_HAS_CHILD,
         CANNOT_LINK_TO_SELF
     }
 }

@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.MovementType;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,11 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractMinecartEntity.class)
 public class MinecartEntityMixin implements MinecartLinkable {
-    @Unique
-    private MinecartLinkable parent;
-
-    @Unique
-    private MinecartLinkable child;
+    @Unique private UUID parent;
+    @Unique private UUID child;
 
     @Override
     public LinkFailure metroRail$addParent(MinecartLinkable other) {
@@ -36,38 +35,48 @@ public class MinecartEntityMixin implements MinecartLinkable {
         }
 
         if (other.metroRail$getChild() != null) {
-            return LinkFailure.ALREADY_HAS_CHILD;
+            return LinkFailure.SOURCE_ALREADY_HAS_CHILD;
         }
 
-        setParentInternal(other);
-        ((MinecartEntityMixin) other).setChildInternal(this);
+        metroRail$setParentInternal(other.metroRail$getUuid());
+        other.metroRail$setChildInternal(this.metroRail$getUuid());
 
         return LinkFailure.NONE;
     }
 
     @Override
     public MinecartLinkable metroRail$getParent() {
-        return parent;
+        AbstractMinecartEntity self = (AbstractMinecartEntity) (Object) this;
+        World world = self.getWorld();
+        Entity parent = world.getEntity(this.parent);
+        if (parent instanceof MinecartLinkable) {
+            return (MinecartLinkable) parent;
+        }
+        return null;
     }
 
     @Override
     public MinecartLinkable metroRail$getChild() {
-        return child;
+        AbstractMinecartEntity self = (AbstractMinecartEntity) (Object) this;
+        World world = self.getWorld();
+        Entity child = world.getEntity(this.child);
+        if (child instanceof MinecartLinkable) {
+            return (MinecartLinkable) child;
+        }
+        return null;
     }
 
     @Override
-    public boolean metroRail$unlinkNeighbors() {
+    public void metroRail$unlinkNeighbors() {
         if (parent != null) {
-            ((MinecartEntityMixin) parent).child = null;
+            metroRail$getParent().metroRail$setChildInternal(null);
             parent = null;
         }
 
         if (child != null) {
-            ((MinecartEntityMixin) child).parent = null;
+            metroRail$getChild().metroRail$setParentInternal(null);
             child = null;
         }
-
-        return true;
     }
 
     @Override
@@ -117,65 +126,87 @@ public class MinecartEntityMixin implements MinecartLinkable {
     }
 
     @Unique
-    private void setChildInternal(MinecartLinkable child) {
+    public void metroRail$setChildInternal(UUID child) {
         this.child = child;
     }
 
     @Unique
-    private void setParentInternal(MinecartLinkable parent) {
+    public void metroRail$setParentInternal(UUID parent) {
         this.parent = parent;
     }
 
-    @Unique
-    private void setChildInternal(Entity child) {
-        if (child instanceof MinecartLinkable childLink) {
-            setChildInternal(childLink);
-        }
-    }
-
-    @Unique
-    private void setParentInternal(Entity parent) {
-        if (parent instanceof MinecartLinkable parentLink) {
-            setParentInternal(parentLink);
-        }
-    }
-
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
+    @Inject(method = "writeCustomData", at = @At("HEAD"))
     public void writeCustomData(WriteView view, CallbackInfo ci) {
         if (parent != null) {
-            view.putString("Parent", parent.metroRail$getUuid().toString());
+            view.putString("MR-Parent", parent.toString());
         }
 
         if (child != null) {
-            view.putString("Child", child.metroRail$getUuid().toString());
+            view.putString("MR-Child", child.toString());
         }
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
+    @Inject(method = "readCustomData", at = @At("HEAD"))
     public void readCustomData(ReadView view, CallbackInfo ci) {
-        AbstractMinecartEntity self = (AbstractMinecartEntity) (Object) this;
-        World world = self.getWorld();
-
-        if (world == null) {
-            return; // World is not available, cannot restore links
-        }
-
-        if (view.contains("Parent")) {
-            String parentId = view.getString("Parent", null);
+        if (view.contains("MR-Parent")) {
+            String parentId = view.getString("MR-Parent", null);
             if (parentId != null) {
                 UUID parentUuid = UUID.fromString(parentId);
-                Entity parentEntity = world.getEntity(parentUuid);
-                this.setParentInternal(parentEntity);
+                this.metroRail$setParentInternal(parentUuid);
             }
         }
 
-        if (view.contains("Child")) {
-            String childId = view.getString("Child", null);
+        if (view.contains("MR-Child")) {
+            String childId = view.getString("MR-Child", null);
             if (childId != null) {
                 UUID childUuid = UUID.fromString(childId);
-                Entity childEntity = world.getEntity(childUuid);
-                this.setChildInternal(childEntity);
+                this.metroRail$setChildInternal(childUuid);
             }
         }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void tickLinkedTrain(CallbackInfo ci) {
+        AbstractMinecartEntity self = (AbstractMinecartEntity)(Object)this;
+
+        if (parent == null) {
+            // Head drives the train
+            pullChildChain(self);
+        }
+    }
+
+    @Unique
+    private void pullChildChain(AbstractMinecartEntity parentEntity) {
+        MinecartLinkable childLink = ((MinecartLinkable) parentEntity).metroRail$getChild();
+        if (childLink == null) return;
+
+        AbstractMinecartEntity child = (AbstractMinecartEntity) childLink;
+
+        // Desired spacing between carts
+        double desiredDistance = 1.5;
+
+        // Compute horizontal vector from child to parent
+        double dx = parentEntity.getX() - child.getX();
+        double dz = parentEntity.getZ() - child.getZ();
+        double distance = Math.sqrt(dx * dx + dz * dz);
+
+        if (distance > 0) {
+            // Calculate the movement needed to maintain spacing
+            double targetDistance = distance - desiredDistance;
+            double moveFactor = targetDistance / distance;
+
+            double moveX = dx * moveFactor;
+            double moveZ = dz * moveFactor;
+
+            // Force-position the child along the rail respecting collisions
+            child.move(MovementType.SELF, new Vec3d(moveX, 0, moveZ));
+
+            // Reset velocity to prevent child from pushing parent
+            child.setVelocity(Vec3d.ZERO);
+            child.velocityModified = true;
+        }
+
+        // Recursive call for the next child
+        pullChildChain(child);
     }
 }
