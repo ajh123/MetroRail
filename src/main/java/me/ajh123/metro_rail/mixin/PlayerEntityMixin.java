@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import me.ajh123.metro_rail.content.minecart.CartLinkingComponent;
 import me.ajh123.metro_rail.content.minecart.MinecartLinkable;
+import me.ajh123.metro_rail.content.minecart.MinecartLinkable.LinkFailure;
 import me.ajh123.metro_rail.foundation.ModComponents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -31,10 +32,13 @@ public class PlayerEntityMixin {
 
         boolean isMinecart = entity instanceof AbstractMinecartEntity;
         boolean isHoldingChain = handItem.getItem() == Items.CHAIN;
+        boolean isHoldingShears = handItem.getItem() == Items.SHEARS;
+
         boolean startingLink = handItem.get(ModComponents.CART_LINKING) == null;
         boolean isLinking = isMinecart && isHoldingChain && self.isSneaking();
+        boolean isUnlinking = isMinecart && isHoldingShears && self.isSneaking();
 
-        if (isLinking && world.isClient) {
+        if ((isLinking || isUnlinking) && world.isClient) {
             ci.setReturnValue(ActionResult.SUCCESS);
             return;
         }
@@ -44,22 +48,51 @@ public class PlayerEntityMixin {
                 self.sendMessage(Text.literal("Starting minecart link"), true);
                 CartLinkingComponent linking = new CartLinkingComponent(entity.getUuid().toString(), true);
                 handItem.set(ModComponents.CART_LINKING, linking);
+                ci.setReturnValue(ActionResult.SUCCESS);
+                return;
             } else {
                 CartLinkingComponent linkData = handItem.get(ModComponents.CART_LINKING);
                 Entity parent = world.getEntity(UUID.fromString(linkData.startingEntityId()));
+                LinkFailure failure = LinkFailure.NONE;
+                ActionResult result = ActionResult.SUCCESS;
+
                 if (parent == null) {
                     self.sendMessage(Text.literal("Invalid minecart link, parent cart does not exist."), true);
-                } else {
+                } else {                    
                     if (parent instanceof MinecartLinkable parentLink) {
                         if (entity instanceof MinecartLinkable childLink) {
-                            childLink.addParent(parentLink);
+                            failure = childLink.addParent(parentLink);
                         }
                     }
-                    self.sendMessage(Text.literal("Finished minecart link"), true);
                 }
-                handItem.remove(ModComponents.CART_LINKING);                
+
+                switch (failure) {
+                    case NONE:
+                        self.sendMessage(Text.literal("Finished minecart link"), true);
+                        break;
+                    case ALREADY_HAS_PARENT:
+                        self.sendMessage(Text.literal("You cannot connect this minecart; the source already has a parent."), true);
+                        result = ActionResult.FAIL;
+                        break;
+                    case CANNOT_LINK_TO_SELF:
+                        self.sendMessage(Text.literal("You cannot connect this minecart; the source cannot be connected to it self."), true);
+                        result = ActionResult.FAIL;
+                    default:
+                        break;
+                }
+
+                handItem.remove(ModComponents.CART_LINKING);
+                ci.setReturnValue(result);
+                return;
             }
-            ci.setReturnValue(ActionResult.SUCCESS);
+        }
+
+        if (isUnlinking) {
+            if (entity instanceof MinecartLinkable childLink) {
+                childLink.unlinkNeighbors();
+                self.sendMessage(Text.literal("Unlinked from parent"), true);
+                ci.setReturnValue(ActionResult.SUCCESS);
+            }
         }
     }
 }
